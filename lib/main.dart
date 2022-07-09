@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() {
@@ -52,16 +52,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   setAsset(String title) async {
-    var content = await rootBundle.load("assets/audio/$title.mp3");
-    final directory = await getApplicationDocumentsDirectory();
-    var file = File("${directory.path}/$title.mp3");
-    file.writeAsBytesSync(content.buffer.asUint8List());
-    await Future.delayed(Duration(seconds: 1));
+    // var content = await rootBundle.load("assets/audio/$title.mp3");
+    // final directory = await getApplicationDocumentsDirectory();
+    // var file = File("${directory.path}/$title.mp3");
+    // file.writeAsBytesSync(content.buffer.asUint8List());
+    // await Future.delayed(Duration(seconds: 1));
+    var filename = (await FilePicker.platform.pickFiles())?.files.single.path;
+    if (filename != null) {
+      await _audioPlayer.setFilePath(filename);
+    }
 
-    await _audioPlayer.setFilePath(file.path);
+    // await _audioPlayer.setFilePath(file.path);
 
     // await _audioPlayer.setUrl(
     //     'file:///Users/hyungjoo/Desktop/develop/flutter_just_audio_test/assets/audio/shower.mp3');
+  }
+
+  Future<File> saveFilePermanently(PlatformFile file) async {
+    final appStorage = await getApplicationDocumentsDirectory();
+    final newFile = File('${appStorage.path}/${file.name}');
+
+    return File(file.path!).copy(newFile.path);
   }
 
   String _getTimeString(Duration time) {
@@ -76,12 +87,18 @@ class _MyHomePageState extends State<MyHomePage> {
         : "$minutes:$seconds";
   }
 
-  void openFile(PlatformFile file) {
+  void openFile(PlatformFile file) async {
     print('${file.bytes}');
     print('${file.size}');
     print('${file.extension}');
     print('${file.path}');
-    // OpenFile.open(file.path);
+
+    final newFile = await saveFilePermanently(file);
+
+    await _audioPlayer.setFilePath(newFile.path);
+
+    print('${file.path!}');
+    print('${newFile.path}');
   }
 
   @override
