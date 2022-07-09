@@ -1,5 +1,11 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,11 +44,24 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     _audioPlayer = AudioPlayer();
     // file name: shower(15mins), wake_up(5mins), new_york(15mins)
-    _audioPlayer.setAsset('assets/audio/wake_up.mp3');
+    setAsset('shower');
     _audioPlayer.positionStream.listen((event) {
       print(event);
     });
     super.initState();
+  }
+
+  setAsset(String title) async {
+    var content = await rootBundle.load("assets/audio/$title.mp3");
+    final directory = await getApplicationDocumentsDirectory();
+    var file = File("${directory.path}/$title.mp3");
+    file.writeAsBytesSync(content.buffer.asUint8List());
+    await Future.delayed(Duration(seconds: 1));
+
+    await _audioPlayer.setFilePath(file.path);
+
+    // await _audioPlayer.setUrl(
+    //     'file:///Users/hyungjoo/Desktop/develop/flutter_just_audio_test/assets/audio/shower.mp3');
   }
 
   String _getTimeString(Duration time) {
@@ -55,6 +74,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return time.inHours > 0
         ? "${time.inHours}:${minutes.padLeft(2, "0")}:$seconds"
         : "$minutes:$seconds";
+  }
+
+  void openFile(PlatformFile file) {
+    print('${file.bytes}');
+    print('${file.size}');
+    print('${file.extension}');
+    print('${file.path}');
+    // OpenFile.open(file.path);
   }
 
   @override
@@ -83,6 +110,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     _audioPlayer.seek(seekDuration);
                   },
                   child: Text('seek to ${_controller.text} seconds')),
+              const SizedBox(
+                height: 100,
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    final result = await FilePicker.platform.pickFiles();
+                    if (result == null) {
+                      return;
+                    }
+
+                    final file = result.files.first;
+                    openFile(file);
+                  },
+                  child: Text('open file')),
               const SizedBox(
                 height: 100,
               ),

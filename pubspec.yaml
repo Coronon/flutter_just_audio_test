@@ -30,6 +30,9 @@ dependencies:
   flutter:
     sdk: flutter
   just_audio: ^0.9.24
+  path_provider: ^2.0.11
+  file_picker: ^4.6.1
+  open_file: ^3.2.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -61,7 +64,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/audio/
+    - assets/audio/new_york.mp3
+    - assets/audio/shower.mp3
+    - assets/audio/wake_up.mp3
+    - audio/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
